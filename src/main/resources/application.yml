@@ -1,0 +1,49 @@
+spring:
+  mvc:
+    throw-exception-if-no-handler-found: true
+  resources:
+    add-mappings: false
+  main:
+    banner-mode: 'OFF'
+  jackson:
+    serialization:
+      write_dates_as_timestamps: false
+  devtools:
+    restart:
+      enabled: true
+      additional-exclude: logs/**
+  jmx:
+    enabled: true
+
+management:
+  context-path: /actuator
+  endpoints:
+    web:
+      exposure:
+        include: env,health,info,refresh,metrics,heapdump,threaddump,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  app:
+    description: "Change this description"
+    name: '@name@'
+    groupId: '@project.groupId@'
+    artifactId: '@project.artifactId@'
+    version: '@project.version@'
+    spring-version: '@spring-boot.version@'
+    java-version: '@java.version@'
+
+org:
+  jobrunr:
+    background-job-server:
+      enabled: true
+    dashboard:
+      enabled: true
+
+campaigns:
+  sanitize:
+    periods:
+      cron: ${CAMPAIGNS_SANITIZE_PERIODS_CRON}
+
+jobrunr:
+  mongodb: ${JOBRUNR_MONGODB}

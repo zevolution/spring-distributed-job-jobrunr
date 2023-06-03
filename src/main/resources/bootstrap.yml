@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: spring-distributed-job-jobrunr
+  cloud:
+    config:
+      enabled: false
+
+server:
+  servlet:
+    context-path: /${spring.application.name}

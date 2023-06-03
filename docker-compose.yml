@@ -1,0 +1,63 @@
+version: '3.8'
+services:
+  database:
+    container_name: mongo-jobrunr
+    image: 'mongo:latest'
+    ports:
+      - '27117:27017'
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+      MONGO_INITDB_DATABASE: jobrunr
+    networks:
+      - my-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/jobrunr --quiet
+      interval: 10s
+      timeout: 20s
+      retries: 3
+      start_period: 10s
+  job-1:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    image: zevolution/spring-distributed-job-jobrunr
+    container_name: spring-distributed-job-jobrunr-1
+    ports:
+      - '5105:5005'
+    depends_on:
+      database:
+        condition: service_healthy
+    links:
+      - database
+    environment:
+      ADDITIONAL_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -Xmx128m -Xms64m -XX:MaxMetaspaceSize=128m"
+      TZ: "America/Sao_Paulo"
+      CAMPAIGNS_SANITIZE_PERIODS_CRON: "*/1 * * * *"
+      JOBRUNR_MONGODB: "mongodb://mongoadmin:secret@@database:27117/jobrunr?authSource=database&readPreference=primary"
+    networks:
+      - my-network
+  job-2:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    image: zevolution/spring-distributed-job-jobrunr
+    container_name: spring-distributed-job-jobrunr-2
+    ports:
+      - '5106:5005'
+    depends_on:
+      database:
+        condition: service_healthy
+    links:
+      - database
+    environment:
+      ADDITIONAL_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -Xmx128m -Xms64m -XX:MaxMetaspaceSize=128m"
+      TZ: "America/Sao_Paulo"
+      CAMPAIGNS_SANITIZE_PERIODS_CRON: "*/1 * * * *"
+      JOBRUNR_MONGODB: "mongodb://mongoadmin:secret@@database:27117/jobrunr?authSource=database&readPreference=primary"
+    networks:
+      - my-network
+networks:
+  my-network:
+    driver: bridge
